@@ -5,8 +5,8 @@ import os
 import pandas as pd
 import re
 
-from pc_methods import Reader
-from pc_methods.feature_engineer import FeatureEngineer
+from common.training_reader import TrainingReader
+from common.feature_engineer_frame import FeatureEngineerFrame
 
 
 def main():
@@ -34,14 +34,14 @@ def main():
 
     # iteration on sub-folders
     for directory in directory_list:
-        # Instantiate FeatureEngineer
-        feature_engineer = FeatureEngineer(label=directory)
+        # Instantiate FeatureEngineerFrame
+        feature_engineer = FeatureEngineerFrame(label=directory)
 
         file_list = os.listdir(os.path.join(load_path, directory))
 
         # iteration on audio files in each sub-folder
         for audio_file in file_list:
-            file_reader = Reader(os.path.join(load_path, directory, audio_file))
+            file_reader = TrainingReader(os.path.join(load_path, directory, audio_file))
             data, sample_rate = file_reader.read_audio_file()
             avg_features = feature_engineer.feature_engineer(audio_data=data)
 

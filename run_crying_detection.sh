@@ -1,12 +1,10 @@
-PREDICTION=1
-PLAYING=0
-CPT=0
 
 function clean_up {
-
+        rm recording/signal_9s_1.wav
+        rm recording/signal_9s_2.wav
+        rm prediction/prediction1.txt
+        rm prediction/prediction2.txt
 	# Perform program exit housekeeping
-	echo ""
-	echo "Thank you for using parenting 2.0"
 	echo "Good Bye."
 	stop_playing
 	exit
@@ -14,19 +12,25 @@ function clean_up {
 
 trap clean_up SIGHUP SIGINT SIGTERM
 
-function recording(){
-	echo "Start Recording..."
-	arecord -D plughw:1,0 -d 9 -f S16_LE -c1 -r44100 -t wav /opt/baby_cry/recording/signal_9s.wav
+function recording1(){
+	echo "Start Recording 1 ..."
+	arecord -q -D pulse -d 9 -f S16_LE -c1 -r44100 -t wav recording/signal_9s_1.wav
+}
+
+function recording2(){
+        echo "Start Recording 2 ..."
+        arecord -q -D pulse -d 9 -f S16_LE -c1 -r44100 -t wav recording/signal_9s_2.wav
 }
 
 
-function predict() {
-	echo "Predicting..."
-	echo -n "What is the prediction ?"
-	python /opt/baby_cry/script/make_prediction.py
-	PREDICTION=$(cat /opt/baby_cry/prediction/prediction.txt)
-	echo "Prediction is $PREDICTION"
+function predict1() {
+	python2.7 pc_main/make_prediction.py -q --recording=recording/signal_9s_1.wav --prediction=prediction/prediction1.txt
 }
+
+function predict2() {
+        python2.7 pc_main/make_prediction.py -q --recording=recording/signal_9s_2.wav --prediction=prediction/prediction2.txt
+}
+
 
 function start_playing() {
 	if [[ $PLAYING == 0 ]]; then
@@ -46,14 +50,18 @@ function stop_playing(){
 echo "Welcome to Parenting 2.0"
 echo ""
 while true; do
-	recording
-	predict
-	if [[ $PREDICTION == 0 ]]; then
-		stop_playing
-	else
-		CPT=$(expr $CPT + 1)
-		start_playing
-	fi
-echo "State of the Process PREDICTION = $PREDICTION, PLAYING=$PLAYING, COMPTEUR=$CPT"
+        echo "Prediction: $(cat prediction/prediction1.txt)"
+	recording1
+	predict1 &
+        echo "Prediction: $(cat prediction/prediction2.txt)"
+        recording2
+        predict2 & 
+
+#	if [[ $PREDICTION == 0 ]]; then
+#		stop_playing
+#	else
+#		CPT=$(expr $CPT + 1)
+#		start_playing
+#	fi
 done
 clean_up

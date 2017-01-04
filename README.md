@@ -1,3 +1,6 @@
+#Forked from https://github.com/giulbia/baby_cry_detection
+#License New BSD
+
 # Baby cry detection
 Recognition of baby cry from audio signal
 
