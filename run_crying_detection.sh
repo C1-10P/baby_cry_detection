@@ -1,4 +1,6 @@
 
+SEARCH_STRING="301 - Crying baby"
+
 function clean_up {
         rm recording/signal_9s_1.wav
         rm recording/signal_9s_2.wav
@@ -31,7 +33,7 @@ function predict2() {
         python2.7 pc_main/make_prediction.py -q --recording=recording/signal_9s_2.wav --prediction=prediction/prediction2.txt
 }
 
-
+PLAYING=0
 function start_playing() {
 	if [[ $PLAYING == 0 ]]; then
 		echo "start playing"
@@ -47,21 +49,50 @@ function stop_playing(){
 	fi
 }
 
+function analyse_prediction1()
+{
+
+if [ -f prediction/prediction1.txt ]; then
+ echo "Prediction: $(cat prediction/prediction1.txt)"
+ if [[ $(cat prediction/prediction1.txt) == *"$SEARCH_STRING"* ]]; 
+then
+   start_playing
+   return
+ fi
+fi
+
+stop_playing
+
+}
+
+function analyse_prediction2()
+{
+
+if [ -f prediction/prediction2.txt ]; then
+ echo "Prediction: $(cat prediction/prediction2.txt)"
+ if [[ $(cat prediction/prediction2.txt) == *"$SEARCH_STRING"* ]]; 
+then
+   start_playing
+   return
+ fi
+fi
+
+stop_playing
+
+
+}
+
+
+
 echo "Welcome to Parenting 2.0"
 echo ""
 while true; do
-        echo "Prediction: $(cat prediction/prediction1.txt)"
+        analyse_prediction1
 	recording1
 	predict1 &
-        echo "Prediction: $(cat prediction/prediction2.txt)"
+        analyse_prediction2
         recording2
         predict2 & 
 
-#	if [[ $PREDICTION == 0 ]]; then
-#		stop_playing
-#	else
-#		CPT=$(expr $CPT + 1)
-#		start_playing
-#	fi
 done
 clean_up
